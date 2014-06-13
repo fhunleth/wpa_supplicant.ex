@@ -1,5 +1,3 @@
-Code.ensure_loaded?(Hex) and Hex.start
-
 defmodule Mix.Tasks.Compile.WpaSupplicant do
   @shortdoc "Compiles the wpa_ex port binary"
   def run(_) do
@@ -15,15 +13,13 @@ defmodule WpaSupplicant.Mixfile do
      version: "0.0.1",
      elixir: "~> 0.14.0",
      compilers: [:WpaSupplicant, :elixir, :app],
-     deps: deps(Mix.env),
+     deps: deps,
      package: package,
      description: description
     ]
   end
 
   # Configuration for the OTP application
-  #
-  # Type `mix help compile.app` for more information
   def application do
     [applications: []]
   end
@@ -35,30 +31,11 @@ defmodule WpaSupplicant.Mixfile do
   end
 
   defp package do
-    [
-      contributors: ["Frank Hunleth"],
-      license: "Apache-2.0",
-      links: [
-        { "GitHub", "https://github.com/fhunleth/wpa_supplicant.ex" },
-        { "Issues", "https://github.com/fhunleth/wpa_supplicant.ex/issues" }
-      ],
-      files: [
-        "lib",
-        "src",
-        "priv",
-        "Makefile",
-        "mix.exs",
-        "README.md",
-        "LICENSE"
-        ]
-      ]
+    %{licenses: ["Apache-2.0", "BSD-3c"],
+      links: %{"GitHub" => "https://github.com/fhunleth/wpa_supplicant.ex"}}
   end
 
-  defp deps(:docs) do
-    [{ :ex_doc, github: "elixir-lang/ex_doc" }]
-  end
-
-  defp deps(_) do
+  defp deps do
     []
   end
 end
