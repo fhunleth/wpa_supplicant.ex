@@ -15,15 +15,16 @@
  */
 
 #include <err.h>
+#include <errno.h>
 #include <poll.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/uio.h>
-#include <errno.h>
-#include <stdint.h>
-#include <arpa/inet.h>  // for htons and ntohs
 #include <unistd.h>
+
+#include <arpa/inet.h>  // for htons and ntohs
 
 #include "wpa_ctrl/wpa_ctrl.h"
 
@@ -96,6 +97,7 @@ static size_t try_dispatch()
 
 static void process_erl()
 {
+    debug("process_erl\n");
     ssize_t amount_read =
         read(STDIN_FILENO,
             erl_buffer + erl_buffer_ix,
@@ -166,6 +168,7 @@ int main(int argc, char *argv[])
         fdset[1].events = POLLIN;
         fdset[1].revents = 0;
 
+        debug("waiting on poll\n");
         int rc = poll(fdset, 2, -1);
         if (rc < 0) {
             // Retry if EINTR
@@ -175,10 +178,12 @@ int main(int argc, char *argv[])
             err(EXIT_FAILURE, "poll");
         }
 
+        debug("poll: revents[0]=%08x, revents[1]=%08x\n", fdset[0].revents, fdset[1].revents);
+
         if (fdset[0].revents & (POLLIN | POLLHUP))
             process_erl();
 
-        if (fdset[1].revents & POLLPRI)
+        if (fdset[1].revents & POLLIN)
             process_wpa();
     }
 
