@@ -38,3 +38,19 @@ binary to be setuid root. E.g.,
      interface](http://w1.fi/wpa_supplicant/devel/ctrl_iface_page.html)
   3. [wpa_supplicant information on the archlinux
      wiki](https://wiki.archlinux.org/index.php/Wpa_supplicant)
+
+## Licensing
+
+The majority of this package is licensed under the Apache 2.0 license. The code
+that directly interfaces with the `wpa_supplicant` is taken from the
+`wpa_supplicant` package and has the following copyright and license:
+
+```
+/*
+ * wpa_supplicant/hostapd control interface library
+ * Copyright (c) 2004-2007, Jouni Malinen <j@w1.fi>
+ *
+ * This software may be distributed under the terms of the BSD license.
+ * See README for more details.
+ */
+```
