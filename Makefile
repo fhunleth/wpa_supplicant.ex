@@ -8,7 +8,7 @@
 
 WPA_DEFINES = -DCONFIG_CTRL_IFACE -DCONFIG_CTRL_IFACE_UNIX
 
-LDFLAGS +=
+LDFLAGS += -lrt
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 CC ?= $(CROSSCOMPILER)gcc
 MIX ?= mix
