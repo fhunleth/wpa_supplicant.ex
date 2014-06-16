@@ -13,12 +13,13 @@ CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 CC ?= $(CROSSCOMPILER)gcc
 MIX ?= mix
 
-.PHONY: all elixir-code clean
+all: compile
 
-all: elixir-code
-
-elixir-code:
+compile:
 	$(MIX) compile
+
+test:
+	$(MIX) test
 
 %.o: %.c
 	$(CC) -c $(WPA_DEFINES) $(CFLAGS) -o $@ $<
@@ -34,3 +35,5 @@ priv/wpa_ex: src/wpa_ex.o src/wpa_ctrl/os_unix.o src/wpa_ctrl/wpa_ctrl.o
 clean:
 	$(MIX) clean
 	rm -f priv/wpa_ex src/*.o src/wpa_ctrl/*.o
+
+.PHONY: all compile test clean
