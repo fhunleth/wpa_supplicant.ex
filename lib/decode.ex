@@ -56,6 +56,7 @@ defmodule WpaSupplicant.Decode do
   defp tresp(:MIB, resp), do: kv_resp(resp)
   defp tresp(:STATUS, resp), do: kv_resp(resp)
   defp tresp(:"STATUS-VERBOSE", resp), do: kv_resp(resp)
+  defp tresp({:BSS, _}, ""), do: nil
   defp tresp({:BSS, _}, resp), do: kv_resp(resp)
   defp tresp(:INTERFACES, resp) do
     String.split(resp, "\n")

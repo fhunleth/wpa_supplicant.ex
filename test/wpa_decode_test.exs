@@ -186,6 +186,7 @@ defmodule WpaDecodeTest do
       ie: "000b6a6b6d2070726976617465010180dd180050f20101000050f20401000050f20401000050f2020000",
       ssid: "jkm private"
       }
+    assert WpaSupplicant.Decode.resp({:BSS, 100}, "\n") == nil
 
     assert WpaSupplicant.Decode.resp(:INTERFACES, "wlan0\neth0\n") == ["wlan0", "eth0"]
   end

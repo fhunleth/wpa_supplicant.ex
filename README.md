@@ -30,8 +30,28 @@ binary to be setuid root. E.g.,
     iex(1)> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
     {:ok, #PID<0.82.0}
 
-    iex(2)> WpaSupplicant.request "PING"
-    "PONG\n"
+    iex(2)> WpaSupplicant.request(pid, :PING)
+    :PONG
+
+## Notes
+
+TODO: document these
+
+```Elixir
+{:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
+
+# Test the connection to the wpa_supplicant
+WpaSupplicant.request(pid, :PING)
+
+# Dump information about the access point at BSS index 0
+WpaSupplicant.request(pid, {:BSS, 0})
+
+# Scan for all access points and return lots of info about each one
+WpaSupplicant.scan(pid)
+
+# Return the available access points sorted by signal level (strongest first)
+WpaSupplicant.scan(pid) |> Enum.sort(fn(a,b) -> a.level > b.level end) |> Enum.map(fn(a) -> {a.ssid, a.level} end)
+
 
 ## Useful links
 
