@@ -52,6 +52,7 @@ WpaSupplicant.scan(pid)
 # Return the available access points sorted by signal level (strongest first)
 WpaSupplicant.scan(pid) |> Enum.sort(fn(a,b) -> a.level > b.level end) |> Enum.map(fn(a) -> {a.ssid, a.level} end)
 
+```
 
 ## Useful links
 
