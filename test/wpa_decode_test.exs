@@ -42,7 +42,7 @@ defmodule WpaDecodeTest do
       dot1xSuppEapLengthErrorFramesRx=0
       dot1xSuppLastEapolFrameVersion=0
       dot1xSuppLastEapolFrameSource=00:00:00:00:00:00
-      """) == [
+      """) == %{
       dot11RSNAOptionImplemented: true,
       dot11RSNAPreauthenticationImplemented: true,
       dot11RSNAEnabled: false,
@@ -81,7 +81,7 @@ defmodule WpaDecodeTest do
       dot1xSuppEapLengthErrorFramesRx: 0,
       dot1xSuppLastEapolFrameVersion: 0,
       dot1xSuppLastEapolFrameSource: "00:00:00:00:00:00"
-    ]
+    }
 
     assert WpaSupplicant.Decode.resp(:STATUS, """
       bssid=02:00:01:02:03:04
@@ -94,7 +94,7 @@ defmodule WpaDecodeTest do
       Supplicant PAE state=AUTHENTICATED
       suppPortStatus=Authorized
       EAP state=SUCCESS
-      """) == [
+      """) == %{
       bssid: "02:00:01:02:03:04",
       ssid: "test network",
       pairwise_cipher: "CCMP",
@@ -105,7 +105,7 @@ defmodule WpaDecodeTest do
       "Supplicant PAE state": "AUTHENTICATED",
       suppPortStatus: "Authorized",
       "EAP state": "SUCCESS"
-      ]
+    }
 
     assert WpaSupplicant.Decode.resp(:"STATUS-VERBOSE", """
       bssid=02:00:01:02:03:04
@@ -129,7 +129,7 @@ defmodule WpaDecodeTest do
       methodState=NONE
       decision=COND_SUCC
       ClientTimeout=60
-      """) == [
+      """) == %{
       bssid: "02:00:01:02:03:04",
       ssid: "test network",
       id: 0,
@@ -151,7 +151,7 @@ defmodule WpaDecodeTest do
       methodState: "NONE",
       decision: "COND_SUCC",
       ClientTimeout: 60
-      ]
+      }
 
     assert WpaSupplicant.Decode.resp(:PMKSA, """
       Index / AA / PMKID / expiration (in seconds) / opportunistic
@@ -163,7 +163,7 @@ defmodule WpaDecodeTest do
       2 / 02:00:01:33:55:77 / 928389281928383b34afb34ba4212345 / 362 / 1
       """)
 
-    assert WpaSupplicant.Decode.resp(:BSS, """
+    assert WpaSupplicant.Decode.resp({:BSS, 10}, """
       bssid=00:09:5b:95:e0:4e
       freq=2412
       beacon_int=0
@@ -174,7 +174,7 @@ defmodule WpaDecodeTest do
       tsf=0000000000000000
       ie=000b6a6b6d2070726976617465010180dd180050f20101000050f20401000050f20401000050f2020000
       ssid=jkm private
-      """) ==  [
+      """) == %{
       bssid: "00:09:5b:95:e0:4e",
       freq: 2412,
       beacon_int: 0,
@@ -185,7 +185,9 @@ defmodule WpaDecodeTest do
       tsf: 0000000000000000,
       ie: "000b6a6b6d2070726976617465010180dd180050f20101000050f20401000050f20401000050f2020000",
       ssid: "jkm private"
-      ]
+      }
+
+    assert WpaSupplicant.Decode.resp(:INTERFACES, "wlan0\neth0\n") == ["wlan0", "eth0"]
   end
 
   test "interactive" do

@@ -22,8 +22,16 @@ defmodule WpaSupplicant do
     GenServer.start_link(__MODULE__, control_socket_path)
   end
 
-  def request(pid, message) when is_binary(message) do
-    GenServer.call(pid, {:request, message})
+  @doc """
+  Send a request to the wpa_supplicant. 
+
+  ## Examples
+
+      iex> WpaSupplicant.request(pid, :PING)
+      :PONG
+  """
+  def request(pid, command) do
+    GenServer.call(pid, {:request, command})
   end
 
   def init(control_socket_path) do
@@ -37,7 +45,8 @@ defmodule WpaSupplicant do
   end
 
   def handle_call({:request, command}, from, state) do
-    send state.port, {self, {:command, command}}
+    payload = WpaSupplicant.Encode.encode(command)
+    send state.port, {self, {:command, payload}}
     state = %{state | :requests => state.requests ++ [{from, command}]}
     {:noreply, state}
   end
@@ -48,20 +57,17 @@ defmodule WpaSupplicant do
 
   defp handle_wpa(<< "<", _priority::utf8, ">", notification::binary>>, state) do
     IO.puts "Notif: #{notification}"
-    n = wpa_notification(notification)
-    IO.inspect n
+    decoded_notif = WpaSupplicant.Decode.notif(notification)
+    IO.inspect decoded_notif
     {:noreply, state}
   end
   defp handle_wpa(response, state) do
     IO.puts "Response: #{response}"
-    [{client, _command} | next_ones] = state.requests
+    [{client, command} | next_ones] = state.requests
     state = %{state | :requests => next_ones}
-    GenServer.reply client, response
+
+    decoded_response = WpaSupplicant.Decode.resp(command, response)
+    GenServer.reply client, decoded_response
     {:noreply, state}
   end
-
-  def wpa_notification(<< "CTRL-EVENT-", _type::binary>> = event) do
-    event |> String.rstrip |> String.to_atom
-  end
-
 end

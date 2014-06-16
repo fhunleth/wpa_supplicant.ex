@@ -56,15 +56,20 @@ defmodule WpaSupplicant.Decode do
   defp tresp(:MIB, resp), do: kv_resp(resp)
   defp tresp(:STATUS, resp), do: kv_resp(resp)
   defp tresp(:"STATUS-VERBOSE", resp), do: kv_resp(resp)
-  defp tresp(:BSS, resp), do: kv_resp(resp)
+  defp tresp({:BSS, _}, resp), do: kv_resp(resp)
+  defp tresp(:INTERFACES, resp) do
+    String.split(resp, "\n")
+  end
+  defp tresp(_, "OK"), do: :ok
   defp tresp(_, resp), do: resp
 
   defp kv_resp(resp) do
-    pairs = String.split(resp, "\n", trim: true)
-    for pair <- pairs do
-      [key, value] = String.split(pair, "=")
-      { String.to_atom(key), kv_value(String.rstrip(value)) }
-    end
+    resp
+      |> String.split("\n", trim: true)
+      |> List.foldl(%{}, fn(pair, acc) ->
+           [key, value] = String.split(pair, "=")
+           Dict.put(acc, String.to_atom(key), kv_value(String.rstrip(value)))
+         end)
   end
 
   defp kv_value("TRUE"), do: true
