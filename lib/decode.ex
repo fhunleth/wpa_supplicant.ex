@@ -62,6 +62,7 @@ defmodule WpaSupplicant.Decode do
   defp tresp(:ADD_NETWORK, netid), do: String.to_integer(netid)
   defp tresp(_, "OK"), do: :ok
   defp tresp(_, "FAIL"), do: :FAIL
+  defp tresp(_, << "\"", string::binary >>), do: String.rstrip(string, ?")
   defp tresp(_, resp), do: resp
 
   defp kv_resp(resp) do

@@ -36,12 +36,27 @@ defmodule WpaSupplicant.Encode do
     "CTRL-RSP-PASSPHRASE-#{network_id}-#{string}"
   end
   def encode({cmd, arg}) when is_atom(cmd) do
-    to_string(cmd) <> " " <> to_string(arg)
+    to_string(cmd) <> " " <> encode_arg(arg)
   end
   def encode({cmd, arg, arg2}) when is_atom(cmd) do
-    to_string(cmd) <> " " <> to_string(arg) <> " " <> to_string(arg2)
+    to_string(cmd) <> " " <> encode_arg(arg) <> " " <> encode_arg(arg2)
   end
   def encode({cmd, arg, arg2, arg3}) when is_atom(cmd) do
-    to_string(cmd) <> " " <> to_string(arg) <> " " <> to_string(arg2) <> " " <> to_string(arg3)
+    to_string(cmd) <> " " <> encode_arg(arg) <> " " <> encode_arg(arg2) <> " " <> encode_arg(arg3)
   end
+
+  defp encode_arg(arg) when is_binary(arg) do
+    if String.length(arg) == 17 &&
+      Regex.match?(~r/[\da-fA-F][\da-fA-F]:[\da-fA-F][\da-fA-F]:[\da-fA-F][\da-fA-F]:[\da-fA-F][\da-fA-F]:[\da-fA-F][\da-fA-F]:[\da-fA-F][\da-fA-F]/, arg) do
+      # This is a MAC address
+      arg
+    else
+      # This is a string
+      "\"" <> arg <> "\""
+    end
+  end
+  defp encode_arg(arg) do
+    to_string(arg)
+  end
+
 end
