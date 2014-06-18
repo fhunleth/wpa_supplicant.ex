@@ -280,5 +280,7 @@ defmodule WpaDecodeTest do
     # P2P-SERV-DISC-RESP 02:40:61:c2:f3:b7 0 0300000101
     # P2P-INVITATION-RECEIVED sa=02:40:61:c2:f3:b7 persistent=0
     # P2P-INVITATION-RESULT status=1
+
+    assert WpaSupplicant.Decode.notif("Trying to associate with 58:6d:8f:8d:c8:92 (SSID='LKC Tech HQ' freq=2412 MHz)") == {:INFO, "Trying to associate with 58:6d:8f:8d:c8:92 (SSID='LKC Tech HQ' freq=2412 MHz)"}
   end
 end

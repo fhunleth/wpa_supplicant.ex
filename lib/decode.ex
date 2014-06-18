@@ -40,6 +40,9 @@ defmodule WpaSupplicant.Decode do
   def notif(<< "AP-STA-DISCONNECTED ", mac::binary>>) do
     {:"AP-STA-DISCONNECTED", String.rstrip(mac)}
   end
+  def notif(string) do
+    {:INFO, String.rstrip(string)}
+  end
 
   @doc """
   Decode responses from the wpa_supplicant
