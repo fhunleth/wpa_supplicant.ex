@@ -112,6 +112,9 @@ defmodule WpaSupplicant do
   def handle_info({_, {:data, message}}, state) do
     handle_wpa(message, state)
   end
+  def handle_info({_, {:exit_status, _}}, state) do
+    {:stop, :unexpected_exit, state}
+  end
 
   defp handle_wpa(<< "<", _priority::utf8, ">", notification::binary>>, state) do
     decoded_notif = WpaSupplicant.Decode.notif(notification)
