@@ -189,6 +189,9 @@ defmodule WpaDecodeTest do
     assert WpaSupplicant.Decode.resp({:BSS, 100}, "\n") == nil
 
     assert WpaSupplicant.Decode.resp(:INTERFACES, "wlan0\neth0\n") == ["wlan0", "eth0"]
+    assert WpaSupplicant.Decode.resp(:ADD_NETWORK, "0") == 0
+    assert WpaSupplicant.Decode.resp({:SET_NETWORK, 0, :ssid, "MySSID"}, "FAIL") == :FAIL
+    assert WpaSupplicant.Decode.resp({:SET_NETWORK, 0, :ssid, "MySSID"}, "OK") == :ok
   end
 
   test "interactive" do
