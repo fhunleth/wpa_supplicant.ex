@@ -27,32 +27,86 @@ binary to be setuid root. E.g.,
 
 ## Running
 
-    iex(1)> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
+This code expects that the `wpa_supplicant` has already been started. If it
+hasn't, start it. For example,
+
+    iex> System.cmd "wpa_supplicant -iwlan0 -C/var/run/wpa_supplicant -B"
+
+After the `wpa_supplicant` has been started, it's possible to start the
+`WpaSupplicant` interface:
+
+    iex> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
     {:ok, #PID<0.82.0}
 
-    iex(2)> WpaSupplicant.request(pid, :PING)
+    iex> WpaSupplicant.request(pid, :PING)
     :PONG
 
-## Notes
+To scan for access points, call `WpaSupplicant.scan/1`. This can take a few
+seconds:
 
-TODO: document these
+    iex> WpaSupplicant.scan(pid)
+    [%{age: 42, beacon_int: 100, bssid: "00:1f:90:db:45:54", capabilities: 1073,
+       flags: "[WEP][ESS]", freq: 2462, id: 8,
+       ie: "00053153555434010882848b0c1296182403010b07", 
+       level: -83, noise: 0, qual: 0, ssid: "1SUT4", tsf: 580579066269},
+     %{age: 109, beacon_int: 100, bssid: "00:18:39:7a:23:e8", capabilities: 1041,
+       flags: "[WEP][ESS]", freq: 2412, id: 5,
+       ie: "00076c696e6b737973010882848b962430486c0301",
+       level: -86, noise: 0, qual: 0, ssid: "linksys", tsf: 464957892243},
+     %{age: 42, beacon_int: 100, bssid: "1c:7e:e5:32:d1:f8", capabilities: 1041,
+       flags: "[WPA2-PSK-CCMP][ESS]", freq: 2412, id: 0,
+       ie: "000768756e6c657468010882848b960c1218240301",
+       level: -43, noise: 0, qual: 0, ssid: "dlink", tsf: 580587711245}]
 
-```Elixir
-{:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
+To attach to an access point, you need to configure a network entry in the
+`wpa_supplicant`. The `wpa_supplicant` can have multiple network entries
+configured. The following removes all network entries so that only one is
+configured.
 
-# Test the connection to the wpa_supplicant
-WpaSupplicant.request(pid, :PING)
+    iex> WpaSupplicant.request(pid, {:REMOVE_NETWORK, "all"})
+    :ok
+    # It's ok if :REMOVE_NETWORK fails. That just means there are no networks.
 
-# Dump information about the access point at BSS index 0
-WpaSupplicant.request(pid, {:BSS, 0})
+    iex> netid=WpaSupplicant.request(pid, :ADD_NETWORK)
+    0
 
-# Scan for all access points and return lots of info about each one
-WpaSupplicant.scan(pid)
+    iex> WpaSupplicant.request(pid, {:SET_NETWORK, netid, :ssid, "MyNetworkSsid"})
+    :ok
 
-# Return the available access points sorted by signal level (strongest first)
-WpaSupplicant.scan(pid) |> Enum.sort(fn(a,b) -> a.level > b.level end) |> Enum.map(fn(a) -> {a.ssid, a.level} end)
+    iex> WpaSupplicant.request(pid, {:SET_NETWORK, netid, :psk, "secret"})
+    :ok
 
-```
+    # Once the network is enabled, the wpa_supplicant will start trying to
+    # connect
+    iex> WpaSupplicant.request(pid, {:ENABLE_NETWORK, netid})
+    :ok
+
+If the access point is around, the `wpa_supplicant` will eventually connect to
+the network.
+
+    iex> WpaSupplicant.request(pid, :STATUS)
+    %{address: "84:3a:4b:11:95:23", bssid: "1c:7e:e5:32:de:32",
+      group_cipher: "CCMP", id: 0, ip_address: "192.168.1.112",
+      key_mgmt: "WPA2-PSK", mode: "station", pairwise_cipher: "CCMP",
+      ssid: "MyNetworkSsid", uuid: "4724c801-d019-57b1-b58e-51f644312345",
+      wpa_state: "COMPLETED"}
+
+Polling the `wpa_supplicant` for status isn't that great, so it's possible to
+register a `GenEvent` with `WpaSupplicant`. If you don't supply one, one is
+automatically created and available via `WpaSupplicant.event_manager/1`. The
+following example shows how to view events at the prompt:
+
+    iex> defmodule Forwarder do
+    ...>  use GenEvent
+    ...>  def handle_event(event, parent) do
+    ...>    send parent, event
+    ...>    {:ok, parent}
+    ...>  end
+    ...> end
+    iex> WpaSupplicant.event_manager(pid) |> GenEvent.add_handler(Forwarder, self())
+    iex> flush
+    {:wpa_supplicant, #PID<0.85.0>, :"CTRL-EVENT-SCAN-STARTED"}
+    {:wpa_supplicant, #PID<0.85.0>, :"CTRL-EVENT-SCAN-RESULTS"}
 
 ## Useful links
 
