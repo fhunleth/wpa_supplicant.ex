@@ -74,10 +74,8 @@ the network.
 
     iex> WpaSupplicant.status(pid)
     %{address: "84:3a:4b:11:95:23", bssid: "1c:7e:e5:32:de:32",
-      group_cipher: "CCMP", id: 0, ip_address: "192.168.1.112",
-      key_mgmt: "WPA2-PSK", mode: "station", pairwise_cipher: "CCMP",
-      ssid: "MyNetworkSsid", uuid: "4724c801-d019-57b1-b58e-51f644312345",
-      wpa_state: "COMPLETED"}
+      group_cipher: "TKIP", id: 0, key_mgmt: "WPA2-PSK", mode: "station",
+      pairwise_cipher: "CCMP", ssid: "MyNetworkSsid", wpa_state: "COMPLETED"}
 
 Polling the `wpa_supplicant` for status isn't that great, so it's possible to
 register a `GenEvent` with `WpaSupplicant`. If you don't supply one in the call
