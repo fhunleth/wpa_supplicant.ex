@@ -28,12 +28,13 @@ priv/wpa_ex: src/wpa_ex.o src/wpa_ctrl/os_unix.o src/wpa_ctrl/wpa_ctrl.o
 	@mkdir -p priv
 	$(CC) $^ $(LDFLAGS) -o $@
 
-	# setuid root wpa_ex so that it can interact with wpa_supplicant
-	sudo chown root:root $@
-	sudo chmod +s $@
+# setuid root wpa_ex so that it can interact with the wpa_supplicant
+setuid: priv/wpa_ex
+	sudo chown root:root $^
+	sudo chmod +s $^
 
 clean:
 	$(MIX) clean
 	rm -f priv/wpa_ex src/*.o src/wpa_ctrl/*.o
 
-.PHONY: all compile test clean
+.PHONY: all compile test clean setuid

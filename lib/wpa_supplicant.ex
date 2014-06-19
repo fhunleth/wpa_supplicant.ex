@@ -38,7 +38,7 @@ defmodule WpaSupplicant do
   end
 
   @doc """
-  Send a request to the wpa_supplicant. 
+  Send a request to the wpa_supplicant.
 
   ## Examples
 
@@ -58,13 +58,60 @@ defmodule WpaSupplicant do
   end
 
   @doc """
+  Return the current status of the wpa_supplicant. It wraps the
+  STATUS command.
+  """
+  def status(pid) do
+    request(pid, :STATUS)
+  end
+
+  @doc """
+  Tell the wpa_supplicant to connect to the specified network. Invoke
+  like this:
+
+      iex> WpaSupplicant.set_network(pid, ssid: "MyNetowkrSsid", psk: "secret")
+
+  Many options are supported, but it is likely that `ssid` and `psk` are
+  the most useful. The full list can be found in the wpa_supplicant
+  documentation. Here's a list of some common ones:
+
+  Option                | Description
+  ----------------------|------------
+  :ssid                 | Network name. This is mandatory
+  :psk                  | WPA preshared key - 64 hex-digits or an ASCII passphrase
+  :bssid                | Optional BSSID. If set, only associate with the AP with a matching BSSID
+  :mode                 | Mode: 0 = infrastructure (default), 1 = ad-hoc, 2 = AP
+  :frequency            | Channel frequency. e.g., 2412 for 802.11b/g channel 1
+  :wep_key0..3          | Static WEP key
+  :wep_tx_keyidx        | Default WEP key index (0 to 3)
+
+  Note that this is a helper function that wraps several low level calls and
+  is limited to specifying only one network at a time. If you'd
+  like to register multiple networks with the supplicant, send the
+  ADD_NETWORK, SET_NETWORK, ENABLE_NETWORK messages manually.
+  """
+  def set_network(pid, options) when is_list(options) do
+    # Don't worry if the following fails. We just need to
+    # make sure that no other networks registered with the
+    # wpa_supplicant take priority over ours
+    WpaSupplicant.request(pid, {:REMOVE_NETWORK, "all"})
+
+    netid = WpaSupplicant.request(pid, :ADD_NETWORK)
+    Enum.each(options, fn({key, value}) ->
+        :ok = WpaSupplicant.request(pid, {:SET_NETWORK, netid, key, value})
+      end)
+
+    :ok = WpaSupplicant.request(pid, {:ENABLE_NETWORK, netid})
+  end
+
+  @doc """
   This is a helper function that will initiate a scan, wait for the
   scan to complete and return a list of all of the available access
-  points.
+  points. This can take a while if the wpa_supplicant hasn't scanned
+  for access points recently.
   """
-
   def scan(pid) do
-    stream = pid |> event_manager |> GenEvent.stream(timeout: 30000)
+    stream = pid |> event_manager |> GenEvent.stream(timeout: 60000)
     case request(pid, :SCAN) do
       :ok -> :ok
 

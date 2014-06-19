@@ -18,12 +18,14 @@ build, do the following:
 
 ## Permissions
 
-The `wpa_supplicant` process runs as root and requires processes that attach to
+The `wpa_supplicant` daemon runs as root and requires processes that attach to
 its control interface to be root. One way of doing this is to set the `wpa_ex`
 binary to be setuid root. E.g.,
 
     chown root:root priv/wpa_ex
     chmod +s priv/wpa_ex
+
+The `Makefile` has a `setuid` target that runs those commands.
 
 ## Running
 
@@ -32,7 +34,7 @@ hasn't, start it. For example,
 
     iex> System.cmd "wpa_supplicant -iwlan0 -C/var/run/wpa_supplicant -B"
 
-After the `wpa_supplicant` has been started, it's possible to start the
+After the `wpa_supplicant` starts, it's possible to start the
 `WpaSupplicant` interface:
 
     iex> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
@@ -47,7 +49,7 @@ seconds:
     iex> WpaSupplicant.scan(pid)
     [%{age: 42, beacon_int: 100, bssid: "00:1f:90:db:45:54", capabilities: 1073,
        flags: "[WEP][ESS]", freq: 2462, id: 8,
-       ie: "00053153555434010882848b0c1296182403010b07", 
+       ie: "00053153555434010882848b0c1296182403010b07",
        level: -83, noise: 0, qual: 0, ssid: "1SUT4", tsf: 580579066269},
      %{age: 109, beacon_int: 100, bssid: "00:18:39:7a:23:e8", capabilities: 1041,
        flags: "[WEP][ESS]", freq: 2412, id: 5,
@@ -63,28 +65,14 @@ To attach to an access point, you need to configure a network entry in the
 configured. The following removes all network entries so that only one is
 configured.
 
-    iex> WpaSupplicant.request(pid, {:REMOVE_NETWORK, "all"})
-    :ok
-    # It's ok if :REMOVE_NETWORK fails. That just means there are no networks.
-
-    iex> netid=WpaSupplicant.request(pid, :ADD_NETWORK)
-    0
-
-    iex> WpaSupplicant.request(pid, {:SET_NETWORK, netid, :ssid, "MyNetworkSsid"})
+    iex> WpaSupplicant.set_network(pid, ssid: "MyNetworkSsid", psk: "secret")
     :ok
 
-    iex> WpaSupplicant.request(pid, {:SET_NETWORK, netid, :psk, "secret"})
-    :ok
-
-    # Once the network is enabled, the wpa_supplicant will start trying to
-    # connect
-    iex> WpaSupplicant.request(pid, {:ENABLE_NETWORK, netid})
-    :ok
 
 If the access point is around, the `wpa_supplicant` will eventually connect to
 the network.
 
-    iex> WpaSupplicant.request(pid, :STATUS)
+    iex> WpaSupplicant.status(pid)
     %{address: "84:3a:4b:11:95:23", bssid: "1c:7e:e5:32:de:32",
       group_cipher: "CCMP", id: 0, ip_address: "192.168.1.112",
       key_mgmt: "WPA2-PSK", mode: "station", pairwise_cipher: "CCMP",
@@ -92,8 +80,8 @@ the network.
       wpa_state: "COMPLETED"}
 
 Polling the `wpa_supplicant` for status isn't that great, so it's possible to
-register a `GenEvent` with `WpaSupplicant`. If you don't supply one, one is
-automatically created and available via `WpaSupplicant.event_manager/1`. The
+register a `GenEvent` with `WpaSupplicant`. If you don't supply one in the call
+to `start_link`, one is automatically created and available via `WpaSupplicant.event_manager/1`. The
 following example shows how to view events at the prompt:
 
     iex> defmodule Forwarder do
@@ -108,6 +96,24 @@ following example shows how to view events at the prompt:
     {:wpa_supplicant, #PID<0.85.0>, :"CTRL-EVENT-SCAN-STARTED"}
     {:wpa_supplicant, #PID<0.85.0>, :"CTRL-EVENT-SCAN-RESULTS"}
 
+## Low level messaging
+
+It is expected that the helper functions for interacting with the `wpa_supplicant`
+will not cover every situation. The `WpaSupplicant.request/2` function allows
+you to send arbitrary commands. Requests are atoms that are named the same as
+described in the `wpa_supplicant` documentation (see Useful links). If a request
+takes a parameter, pass it as a tuple where the first element is the command.
+Parameters may be strings or numbers and will be properly formatted for the
+control interface. The response is also parsed and turned into atoms, numbers,
+strings, lists, or maps depending on the command. The string parsing is taken
+care of by this library. Here are some examples:
+
+    iex> WpaSupplicant.request(pid, :INTERFACES)
+    ["wlan0"]
+
+    iex> WpaSupplicant.request(pid, {:GET_NETWORK, 0, :key_mgmt})
+    "WPA-PSK"
+
 ## Useful links
 
   1. [wpa_supplicant homepage](http://w1.fi/wpa_supplicant/)
@@ -119,7 +125,7 @@ following example shows how to view events at the prompt:
 ## Licensing
 
 The majority of this package is licensed under the Apache 2.0 license. The code
-that directly interfaces with the `wpa_supplicant` is taken from the
+that directly interfaces with the `wpa_supplicant` is copied from the
 `wpa_supplicant` package and has the following copyright and license:
 
 ```
