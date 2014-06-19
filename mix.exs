@@ -26,12 +26,17 @@ defmodule WpaSupplicant.Mixfile do
 
   defp description do
     """
-    Elixir interface to the wpa_supplicant
+    Elixir interface to the wpa_supplicant daemon. The wpa_supplicant
+    provides application support for scanning for access points, managing
+    Wi-Fi connections, and handling all of the security and other parameters
+    associated with Wi-Fi.
     """
   end
 
   defp package do
-    %{licenses: ["Apache-2.0", "BSD-3c"],
+    %{files: ["lib", "src", "test", "mix.exs", "README.md", "LICENSE", "Makefile"],
+      contributors: ["Frank Hunleth"],
+      licenses: ["Apache-2.0", "BSD-3c"],
       links: %{"GitHub" => "https://github.com/fhunleth/wpa_supplicant.ex"}}
   end
 
