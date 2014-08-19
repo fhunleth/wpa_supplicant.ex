@@ -7,16 +7,7 @@ supplicant. The WPA supplicant handles various Wi-Fi operations like scanning
 for wireless networks, connecting, authenticating, and collecting wireless
 adapter statistics.
 
-## Building
-
-The Makefile currently sets the `wpa_ex` binary to setuid root. This means that
-`sudo` is used during the build process. To enter in your password during the
-build, do the following:
-
-    $ SUDO_ASKPASS=/usr/bin/ssh-askpass
-    $ make
-
-## Permissions
+## Note on permissions
 
 The `wpa_supplicant` daemon runs as root and requires processes that attach to
 its control interface to be root. One way of doing this is to set the `wpa_ex`
@@ -25,12 +16,29 @@ binary to be setuid root. E.g.,
     chown root:root priv/wpa_ex
     chmod +s priv/wpa_ex
 
-The `Makefile` has a `setuid` target that runs those commands.
+The `Makefile` has a `setuid` target that runs those commands. See the building
+section.
+
+## Building
+
+Building `wpa_supplicant.ex` is similar to other Elixir projects. The Makefile
+will invoke `mix` to compile both the Elixir and C source code. The only extra
+step is to ensure that the permissions are right on the `wpa_ex` binary. The
+following script should get you started:
+
+    $ make
+    $ SUDO_ASKPASS=/usr/bin/ssh-askpass make setuid
 
 ## Running
 
-This code expects that the `wpa_supplicant` has already been started. If it
-hasn't, start it. For example,
+Start `iex` by running:
+
+    $ iex -S mix
+
+The `wpa_supplicant` daemon must be running already on your system. This shouldn't
+be a problem on a laptop or desktop. If you're running on an embedded system
+that doesn't automatically start it, do it manually before trying to start the
+`WpaSupplicant` in Elixir. For example:
 
     iex> System.cmd "wpa_supplicant -iwlan0 -C/var/run/wpa_supplicant -B"
 
