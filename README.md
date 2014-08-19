@@ -38,7 +38,7 @@ After the `wpa_supplicant` starts, it's possible to start the
 `WpaSupplicant` interface:
 
     iex> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
-    {:ok, #PID<0.82.0}
+    {:ok, #PID<0.82.0>}
 
     iex> WpaSupplicant.request(pid, :PING)
     :PONG
