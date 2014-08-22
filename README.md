@@ -1,6 +1,4 @@
-# WpaSupplicant
-
-[![Build Status](https://travis-ci.org/fhunleth/wpa_supplicant.ex.svg)](https://travis-ci.org/fhunleth/wpa_supplicant.ex)
+# WpaSupplicant [![Build Status](https://travis-ci.org/fhunleth/wpa_supplicant.ex.svg)](https://travis-ci.org/fhunleth/wpa_supplicant.ex)
 
 This package enables Elixir applications to interact with the local WPA
 supplicant. The WPA supplicant handles various Wi-Fi operations like scanning
@@ -47,6 +45,9 @@ After the `wpa_supplicant` starts, it's possible to start the
 
     iex> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
     {:ok, #PID<0.82.0>}
+
+You can sanity check that Elixir has properly attached to the `wpa_supplicant`
+daemon by pinging it:
 
     iex> WpaSupplicant.request(pid, :PING)
     :PONG
