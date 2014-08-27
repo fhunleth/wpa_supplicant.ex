@@ -8,46 +8,53 @@ adapter statistics.
 ## Note on permissions
 
 The `wpa_supplicant` daemon runs as root and requires processes that attach to
-its control interface to be root. One way of doing this is to set the `wpa_ex`
-binary to be setuid root. E.g.,
-
-    chown root:root priv/wpa_ex
-    chmod +s priv/wpa_ex
-
-The `Makefile` has a `setuid` target that runs those commands. See the building
-section.
+its control interface to be root. This project contains a C port process whose
+sole purpose is to interact with the `wpa_supplicant` daemon, but it needs
+sufficient permission to do so. The `Makefile` contains logic to mark the port
+process setuid root so that this works, but you may want to change this
+depending on your setup.
 
 ## Building
 
 Building `wpa_supplicant.ex` is similar to other Elixir projects. The Makefile
 will invoke `mix` to compile both the Elixir and C source code. The only extra
 step is to ensure that the permissions are right on the `wpa_ex` binary. The
-following script should get you started:
+way this is accomplished is by setting `wpa_ex` setuid root. By default, when
+you run `make`, you'll be asked your password to change permissions.
 
     $ make
-    $ SUDO_ASKPASS=/usr/bin/ssh-askpass make setuid
+
+If you want to disable the setuid root step in the Makefile, just set the `SUDO`
+environment variable to `true` to make it a nop:
+
+    $ SUDO=true make
+
+If you need to use a different askpass program, you can set that as well:
+
+    $ SUDO_ASKPASS=/usr/bin/ssh-askpass make
 
 ## Running
 
-Start `iex` by running:
+The `wpa_supplicant` daemon must be running already on your system and the control
+interface must be exposed. If you have any doubt, try running `wpa_cli`. If that
+doesn't work, the Elixir `WpaSupplicant` won't work.
+
+If you're on a system where you can start the `wpa_supplicant` manually, here's
+an example command line:
+
+    $ /sbin/wpa_supplicant -iwlan0 -C/var/run/wpa_supplicant -B
+
+Once you're happy that the `wpa_supplicant` is running, start `iex` by running:
 
     $ iex -S mix
 
-The `wpa_supplicant` daemon must be running already on your system. This shouldn't
-be a problem on a laptop or desktop. If you're running on an embedded system
-that doesn't automatically start it, do it manually before trying to start the
-`WpaSupplicant` in Elixir. For example:
-
-    iex> System.cmd "wpa_supplicant -iwlan0 -C/var/run/wpa_supplicant -B"
-
-After the `wpa_supplicant` starts, it's possible to start the
-`WpaSupplicant` interface:
+Start a `WpaSupplicant` process:
 
     iex> {:ok, pid} = WpaSupplicant.start_link("/var/run/wpa_supplicant/wlan0")
     {:ok, #PID<0.82.0>}
 
 You can sanity check that Elixir has properly attached to the `wpa_supplicant`
-daemon by pinging it:
+daemon by pinging the daemon:
 
     iex> WpaSupplicant.request(pid, :PING)
     :PONG
@@ -124,10 +131,8 @@ care of by this library. Here are some examples:
 ## Useful links
 
   1. [wpa_supplicant homepage](http://w1.fi/wpa_supplicant/)
-  2. [wpa_supplicant control
-     interface](http://w1.fi/wpa_supplicant/devel/ctrl_iface_page.html)
-  3. [wpa_supplicant information on the archlinux
-     wiki](https://wiki.archlinux.org/index.php/Wpa_supplicant)
+  2. [wpa_supplicant control interface](http://w1.fi/wpa_supplicant/devel/ctrl_iface_page.html)
+  3. [wpa_supplicant information on the archlinux wiki](https://wiki.archlinux.org/index.php/Wpa_supplicant)
 
 ## Licensing
 
