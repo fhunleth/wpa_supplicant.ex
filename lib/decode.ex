@@ -31,6 +31,9 @@ defmodule WpaSupplicant.Decode do
   def notif(<< "CTRL-EVENT-CONNECTED", _rest::binary >>) do
     :"CTRL-EVENT-CONNECTED"
   end
+  def notif(<< "CTRL-EVENT-DISCONNECTED", _rest::binary >>) do
+    :"CTRL-EVENT-DISCONNECTED"
+  end
   def notif(<< "CTRL-EVENT-", _type::binary>> = event) do
     event |> String.rstrip |> String.to_atom
   end
