@@ -84,7 +84,8 @@ defmodule WpaSupplicant do
   ----------------------|------------
   :ssid                 | Network name. This is mandatory.
   :key_mgmt             | The security in use. This is mandatory. Set to :NONE, :WPA_PSK
-  :psk                  | WPA preshared key - 64 hex-digits or an ASCII passphrase
+  :proto                | Protocol use use. E.g., :WPA2
+  :psk                  | WPA preshared key. 8-63 chars or the 64 char one as processed by `wpa_passphrase`
   :bssid                | Optional BSSID. If set, only associate with the AP with a matching BSSID
   :mode                 | Mode: 0 = infrastructure (default), 1 = ad-hoc, 2 = AP
   :frequency            | Channel frequency. e.g., 2412 for 802.11b/g channel 1
@@ -100,7 +101,7 @@ defmodule WpaSupplicant do
     # Don't worry if the following fails. We just need to
     # make sure that no other networks registered with the
     # wpa_supplicant take priority over ours
-    request(pid, {:REMOVE_NETWORK, "all"})
+    request(pid, {:REMOVE_NETWORK, :all})
 
     netid = request(pid, :ADD_NETWORK)
     Enum.each(options, fn({key, value}) ->
