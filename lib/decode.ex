@@ -28,6 +28,9 @@ defmodule WpaSupplicant.Decode do
     [entry_id, bssid] = String.split(rest, " ", trim: true)
     {:"CTRL-EVENT-BSS-REMOVED", String.to_integer(entry_id), bssid}
   end
+  def notif(<< "CTRL-EVENT-CONNECTED", _rest::binary >>) do
+    :"CTRL-EVENT-CONNECTED"
+  end
   def notif(<< "CTRL-EVENT-", _type::binary>> = event) do
     event |> String.rstrip |> String.to_atom
   end

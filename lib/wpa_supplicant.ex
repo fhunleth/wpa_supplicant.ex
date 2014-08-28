@@ -14,6 +14,7 @@
 
 defmodule WpaSupplicant do
   use GenServer
+  require Logger
 
   defstruct port: nil,
             manager: nil,
@@ -69,7 +70,11 @@ defmodule WpaSupplicant do
   Tell the wpa_supplicant to connect to the specified network. Invoke
   like this:
 
-      iex> WpaSupplicant.set_network(pid, ssid: "MyNetowkrSsid", psk: "secret")
+      iex> WpaSupplicant.set_network(pid, ssid: "MyNetworkSsid", key_mgmt: :WPA_PSK, psk: "secret")
+
+  or like this:
+
+      iex> WpaSupplicant.set_network(pid, %{ssid: "MyNetworkSsid", key_mgmt: :WPA_PSK, psk: "secret"})
 
   Many options are supported, but it is likely that `ssid` and `psk` are
   the most useful. The full list can be found in the wpa_supplicant
@@ -77,7 +82,8 @@ defmodule WpaSupplicant do
 
   Option                | Description
   ----------------------|------------
-  :ssid                 | Network name. This is mandatory
+  :ssid                 | Network name. This is mandatory.
+  :key_mgmt             | The security in use. This is mandatory. Set to :NONE, :WPA_PSK
   :psk                  | WPA preshared key - 64 hex-digits or an ASCII passphrase
   :bssid                | Optional BSSID. If set, only associate with the AP with a matching BSSID
   :mode                 | Mode: 0 = infrastructure (default), 1 = ad-hoc, 2 = AP
@@ -88,20 +94,20 @@ defmodule WpaSupplicant do
   Note that this is a helper function that wraps several low level calls and
   is limited to specifying only one network at a time. If you'd
   like to register multiple networks with the supplicant, send the
-  ADD_NETWORK, SET_NETWORK, ENABLE_NETWORK messages manually.
+  ADD_NETWORK, SET_NETWORK, SELECT_NETWORK messages manually.
   """
-  def set_network(pid, options) when is_list(options) do
+  def set_network(pid, options) do
     # Don't worry if the following fails. We just need to
     # make sure that no other networks registered with the
     # wpa_supplicant take priority over ours
-    WpaSupplicant.request(pid, {:REMOVE_NETWORK, "all"})
+    request(pid, {:REMOVE_NETWORK, "all"})
 
-    netid = WpaSupplicant.request(pid, :ADD_NETWORK)
+    netid = request(pid, :ADD_NETWORK)
     Enum.each(options, fn({key, value}) ->
-        :ok = WpaSupplicant.request(pid, {:SET_NETWORK, netid, key, value})
+        :ok = request(pid, {:SET_NETWORK, netid, key, value})
       end)
 
-    :ok = WpaSupplicant.request(pid, {:ENABLE_NETWORK, netid})
+    :ok = request(pid, {:SELECT_NETWORK, netid})
   end
 
   @doc """
@@ -148,6 +154,7 @@ defmodule WpaSupplicant do
 
   def handle_call({:request, command}, from, state) do
     payload = WpaSupplicant.Encode.encode(command)
+    Logger.info("WpaSupplicant: sending '#{payload}'")
     send state.port, {self, {:command, payload}}
     state = %{state | :requests => state.requests ++ [{from, command}]}
     {:noreply, state}
