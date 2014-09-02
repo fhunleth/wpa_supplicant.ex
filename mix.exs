@@ -11,7 +11,7 @@ defmodule WpaSupplicant.Mixfile do
   def project do
     [app: :wpa_supplicant,
      version: "0.1.0",
-     elixir: "~> 0.15.0",
+     elixir: "~> 1.0.0-rc1",
      compilers: [:WpaSupplicant, :elixir, :app],
      deps: deps,
      package: package,
