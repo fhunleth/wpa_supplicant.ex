@@ -1,7 +1,9 @@
 defmodule Mix.Tasks.Compile.WpaSupplicant do
   @shortdoc "Compiles the wpa_ex port binary"
   def run(_) do
-    0=Mix.Shell.IO.cmd("make priv/wpa_ex")
+    {result, _error_code} = System.cmd("make", ["priv/wpa_ex"], stderr_to_stdout: true)
+    IO.binwrite result
+    Mix.Project.build_structure
   end
 end
 
@@ -11,15 +13,20 @@ defmodule WpaSupplicant.Mixfile do
   def project do
     [app: :wpa_supplicant,
      version: "0.1.0",
-     elixir: "~> 1.0.0-rc1",
-     compilers: [:WpaSupplicant, :elixir, :app],
+     elixir: "~> 1.2",
+     build_embedded: Mix.env == :prod,
+     start_permanent: Mix.env == :prod,
+     compilers: Mix.compilers ++ [:WpaSupplicant],
      deps: deps,
+      docs: [extras: ["README.md"]],
      package: package,
      description: description
     ]
   end
 
   # Configuration for the OTP application
+  #
+  # Type "mix help compile.app" for more information
   def application do
     [applications: [:logger]]
   end
@@ -41,6 +48,10 @@ defmodule WpaSupplicant.Mixfile do
   end
 
   defp deps do
-    []
+    [
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev},
+      {:credo, "~> 0.3", only: [:dev, :test]}
+    ]
   end
 end
