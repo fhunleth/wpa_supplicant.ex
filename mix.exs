@@ -42,7 +42,7 @@ defmodule WpaSupplicant.Mixfile do
 
   defp package do
     %{files: ["lib", "src/*.[ch]", "src/wpa_ctrl/*.[ch]", "test", "mix.exs", "README.md", "LICENSE", "Makefile"],
-      contributors: ["Frank Hunleth"],
+      maintainers: ["Frank Hunleth"],
       licenses: ["Apache-2.0", "BSD-3c"],
       links: %{"GitHub" => "https://github.com/fhunleth/wpa_supplicant.ex"}}
   end
