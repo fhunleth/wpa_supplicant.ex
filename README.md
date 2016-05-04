@@ -1,4 +1,5 @@
-# WpaSupplicant [![Build Status](https://travis-ci.org/fhunleth/wpa_supplicant.ex.svg)](https://travis-ci.org/fhunleth/wpa_supplicant.ex)
+# WpaSupplicant
+[![Build Status](https://travis-ci.org/fhunleth/wpa_supplicant.ex.svg)](https://travis-ci.org/fhunleth/wpa_supplicant.ex)
 
 This package enables Elixir applications to interact with the local WPA
 supplicant. The WPA supplicant handles various Wi-Fi operations like scanning
