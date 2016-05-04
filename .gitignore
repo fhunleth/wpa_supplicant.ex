@@ -4,3 +4,4 @@ erl_crash.dump
 *.ez
 *.o
 priv/wpa_ex
+/doc
