@@ -39,6 +39,13 @@ defmodule WpaSupplicant do
   end
 
   @doc """
+  Stop the WpaSupplicant control interface
+  """
+  def stop(pid) do
+    GenServer.stop(pid)
+  end
+
+  @doc """
   Send a request to the wpa_supplicant.
 
   ## Examples
