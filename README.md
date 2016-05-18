@@ -1,5 +1,4 @@
-# WpaSupplicant
-[![Build Status](https://travis-ci.org/fhunleth/wpa_supplicant.ex.svg)](https://travis-ci.org/fhunleth/wpa_supplicant.ex)
+# Use [Nerves.WpaSupplicant](https://github.com/nerves-project/nerves_wpa_supplicant) now
 
 This package enables Elixir applications to interact with the local WPA
 supplicant. The WPA supplicant handles various Wi-Fi operations like scanning
